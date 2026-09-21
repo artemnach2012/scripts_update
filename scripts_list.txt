@@ -1,2 +1,1 @@
-Другие модификации/AntiAFK.ahk
-Воинская часть/ArmyReports.ahk
+
