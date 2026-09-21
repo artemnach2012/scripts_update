@@ -4,15 +4,6 @@
       "name": "Армия докладов",
       "file": "ArmyReports.ahk",
       "description": "Автоматические доклады",
-      "beta": false,
-      "settings": [
-        {
-          "type": "CheckBox",
-          "label": "Включить автоматический доклад по таймеру",
-          "iniSection": "ArmyReports",
-          "iniKey": "AutoReport",
-          "default": 0
-        },
         {
           "type": "Edit",
           "label": "Клавиша для ручного доклада:",
