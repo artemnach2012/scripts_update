@@ -18,10 +18,5 @@
     "name": "Обновление Лаунчера",
     "file": "Launcher.ahk",
     "version": "1.0.1"
-  },
-  "beta": {
-    "name": "beta",
-    "file": "beta.ahk",
-    "version": "1.0.0"
   }
 }
