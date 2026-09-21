@@ -1,2 +1,2 @@
-Полиция/AntiAFK.ahk
-Полиция/ArmyReports.ahk
+Другие модификации/AntiAFK.ahk
+Воинская часть/ArmyReports.ahk
