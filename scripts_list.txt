@@ -1,4 +1,3 @@
 Другие модификации/AntiAFK.ahk
 Воинская часть/ArmyReports.ahk
 СМИ(Москва Live)/MoscowLive.ahk
-МВД/beta.ahk
