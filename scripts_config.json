@@ -66,6 +66,14 @@
         }
       ]
     }
+  ,
+    "beta": {
+      "name": "beta",
+      "file": "beta.ahk",
+      "description": "",
+      "beta": false,
+      "settings": []
+    }
   },
   "launcherSettings": {
     "autoStart": 0,
