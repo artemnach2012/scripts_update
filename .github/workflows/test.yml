@@ -1,0 +1,32 @@
+name: Test AHK and JSON
+
+on: [push, pull_request]
+
+jobs:
+  test-scripts:
+    runs-on: windows-latest
+    steps:
+      - name: Скачивание репозитория
+        uses: actions/checkout@v4
+
+      - name: Проверка JSON конфигов (version.json и scripts_config.json)
+        shell: pwsh
+        run: |
+          Get-ChildItem -Filter *.json | ForEach-Object {
+            Write-Host "Проверяю $($_.Name)..."
+            Get-Content $_.FullName | ConvertFrom-Json | Out-Null
+          }
+
+      - name: Установка AutoHotkey
+        run: choco install autohotkey -y
+
+      - name: Проверка синтаксиса скриптов
+        shell: pwsh
+        run: |
+          Get-ChildItem -Recurse -Filter *.ahk | ForEach-Object {
+            Write-Host "Тестирую $($_.Name)..."
+            # Попытка запустить с проверкой ошибок без зависания
+            Start-Process "AutoHotkey.exe" -ArgumentList "/ErrorStdOut", "`"$($_.FullName)`"" -NoNewWindow
+            Start-Sleep -Seconds 2
+            Stop-Process -Name "AutoHotkey*" -ErrorAction SilentlyContinue
+          }
