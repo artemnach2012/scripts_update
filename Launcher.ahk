@@ -7,33 +7,35 @@
 ; НАСТРОЙКИ
 ; ============================================================
 GITHUB_REPO := "artemnach2012/scripts_update"
-RAW_BASE    := "https://raw.githubusercontent.com/" GITHUB_REPO "/main/"
-INI_FILE    := A_ScriptDir "\settings.ini"
+RAW_BASE := "https://raw.githubusercontent.com/" GITHUB_REPO "/main/"
+INI_FILE := A_ScriptDir "\settings.ini"
 
 ; Список скриптов – лаунчер помечаем флагом isLauncher
 scripts := Map()
-scripts["Launcher"]    := { name: "Лаунчер",        file: "Launcher.ahk",    localVer: "0.0.0", isLauncher: true }
+scripts["Launcher"] := { name: "Лаунчер", file: "Launcher.ahk", localVer: "0.0.0", isLauncher: true }
 scripts["ArmyReports"] := { name: "Армия докладов", file: "ArmyReports.ahk", localVer: "0.0.0" }
-scripts["AntiAFK"]     := { name: "Анти-АФК",        file: "AntiAFK.ahk",     localVer: "0.0.0" }
-scripts["MoscowLive"]  := { name: "Москва-Live",     file: "MoscowLive.ahk",  localVer: "0.0.0" }
+scripts["AntiAFK"] := { name: "Анти-АФК", file: "AntiAFK.ahk", localVer: "0.0.0" }
+scripts["MoscowLive"] := { name: "Москва-Live", file: "MoscowLive.ahk", localVer: "0.0.0" }
+scripts["Helpers"] := { name: "Хелперка", file: Helpers.ahk", localVer: "0.0.0" }
 
 ; ============================================================
 ; ГРАФИЧЕСКИЙ ИНТЕРФЕЙС
 ; ============================================================
-mainGui := Gui(, "Панель управления скриптами"), mainGui.BackColor := "2A2A2A"
+mainGui := Gui(, "Панель управления скриптами")
+mainGui.BackColor := "2A2A2A"
 mainGui.SetFont("s10 cWhite", "Segoe UI")
 
 ; Формируем имена вкладок – порядок важен!
 tabNames := ["Главная"]
 for k, v in scripts
     tabNames.Push(v.name)
+
 tabPanel := mainGui.Add("Tab3", "x10 y10 w610 h380 cWhite", tabNames)
 
 ; ---------- Вкладка "Главная" ----------
 tabPanel.UseTab(1)
-mainGui.SetFont("s12 Bold cWhite"), mainGui.Add("Text", "x20 y45 w590 Center", "🚀 Управление скриптами AutoHotkey")
+mainGui.SetFont("s12 Bold cWhite"), mainGui.Add("Text", "x20 y45 w590 Center", "Управление скриптами AutoHotkey")
 mainGui.SetFont("s9 Italic cFF5555"), mainGui.Add("Text", "x20 y70 w590 Center", "Данное приложение находится в статусе: БЕТА-ВЕРСИЯ")
-
 mainGui.SetFont("s10 Bold cWhite")
 mainGui.Add("Text", "x30 y100 w150", "Название"), mainGui.Add("Text", "x190 y100 w80", "Версия")
 mainGui.Add("Text", "x280 y100 w100", "Статус"), mainGui.Add("Text", "x390 y100 w210", "Действия")
@@ -41,23 +43,20 @@ mainGui.Add("Text", "x280 y100 w100", "Статус"), mainGui.Add("Text", "x390
 guiControls := Map(), yPos := 130
 for key, info in scripts {
     isLauncher := info.HasOwnProp("isLauncher") && info.isLauncher
-
     mainGui.SetFont("s10 Norm cWhite")
     mainGui.Add("Text", "x30 y" yPos " w150", info.name)
     verText := mainGui.Add("Text", "x190 y" yPos " w80 cYellow", "—")
     statusText := mainGui.Add("Text", "x280 y" yPos " w100 cGray", isLauncher ? "Активен" : "Не запущен")
-    
     mainGui.SetFont("s9 cBlack")
     if (isLauncher) {
         btnStart := ""
         btnStop := ""
-        (btnUpdate := mainGui.Add("Button", "x390 y" yPos " w65", "🔄 Обн.")).BackColor := "2196F3"
+        (btnUpdate := mainGui.Add("Button", "x390 y" yPos " w65", " Обн.")).BackColor := "2196F3"
     } else {
         (btnStart := mainGui.Add("Button", "x390 y" yPos " w65", "▶ Старт")).BackColor := "4CAF50"
         (btnStop := mainGui.Add("Button", "x460 y" yPos " w65 Disabled", "⏹ Стоп")).BackColor := "F44336"
-        (btnUpdate := mainGui.Add("Button", "x530 y" yPos " w65", "🔄 Обн.")).BackColor := "2196F3"
+        (btnUpdate := mainGui.Add("Button", "x530 y" yPos " w65", " Обн.")).BackColor := "2196F3"
     }
-
     guiControls[key] := { verText: verText, statusText: statusText, btnStart: btnStart, btnStop: btnStop, btnUpdate: btnUpdate }
     if (!isLauncher) {
         btnStart.OnEvent("Click", StartScript.Bind(key))
@@ -66,33 +65,26 @@ for key, info in scripts {
     btnUpdate.OnEvent("Click", UpdateScript.Bind(key))
     yPos += 35
 }
+
 mainGui.SetFont("s9 cBlack")
-(btnUpdateAll := mainGui.Add("Button", "x30 y" (yPos + 15) " w150", "🔄 Обновить все")).BackColor := "4CAF50"
+(btnUpdateAll := mainGui.Add("Button", "x30 y" (yPos + 15) " w150", " Обновить все")).BackColor := "4CAF50"
 btnUpdateAll.OnEvent("Click", UpdateAllScripts)
 
 ; ---------- Вкладки настроек (только для обычных скриптов) ----------
 configFields := Map()
-
-; Переменная для отслеживания текущего номера вкладки
-; Вкладка 1 – "Главная", поэтому начинаем с 2
 tabIndex := 2
-
 for key, info in scripts {
-    ; Пропускаем лаунчер – для него нет настроек
     if (info.HasOwnProp("isLauncher") && info.isLauncher) {
-        tabIndex += 1   ; всё равно сдвигаем индекс, чтобы сохранить соответствие
+        tabIndex += 1
         continue
     }
-    
-    ; Переключаемся на нужную вкладку
     tabPanel.UseTab(tabIndex)
-    tabIndex += 1   ; готовим для следующего скрипта
-
+    tabIndex += 1
     mainGui.SetFont("s12 Bold cWhite"), mainGui.Add("Text", "x30 y50 w550", "Настройки: " info.name)
     mainGui.SetFont("s10 Bold cFF5555")
     mainGui.Add("Text", "x30 y80 w550", "⚠️ ВНИМАНИЕ: Настройки в данный момент НЕ РАБОТАЮТ!")
     mainGui.SetFont("s10 Norm cWhite")
-    
+
     if (key == "ArmyReports") {
         cfg1 := mainGui.Add("CheckBox", "x40 y115 w300", "Включить автоматический доклад по таймеру")
         cfg1.Value := IniRead(INI_FILE, "ArmyReports", "AutoReport", 0)
@@ -114,18 +106,18 @@ for key, info in scripts {
         cfg2 := mainGui.Add("Edit", "x300 y152 w100 Background3A3A3A cWhite Number", IniRead(INI_FILE, "MoscowLive", "Delay", "500"))
         configFields["MoscowLive"] := [cfg1, cfg2]
     }
-    
-    mainGui.SetFont("s9 cBlack")
-    mainGui.Add("Button", "x40 y330 w150", "💾 Сохранить").OnEvent("Click", SaveSettings.Bind(key))
-}
 
-tabPanel.UseTab()  ; снимаем выделение
+    mainGui.SetFont("s9 cBlack")
+    mainGui.Add("Button", "x40 y330 w150", " Сохранить").OnEvent("Click", SaveSettings.Bind(key))
+}
+tabPanel.UseTab()
+
 mainGui.SetFont("s10 cGray")
 statusBar := mainGui.Add("Text", "x15 y400 w610", "Готов к работе.")
 mainGui.Show("w630 h430")
 
 ; ============================================================
-; ФУНКЦИИ (без изменений)
+; ФУНКЦИИ
 ; ============================================================
 
 HideFile(p) {
@@ -236,13 +228,13 @@ SaveSettings(key, *) {
     fields := configFields[key]
     if (key == "ArmyReports") {
         IniWrite(fields[1].Value, INI_FILE, "ArmyReports", "AutoReport")
-        IniWrite(fields[2].Text,  INI_FILE, "ArmyReports", "Hotkey")
+        IniWrite(fields[2].Text, INI_FILE, "ArmyReports", "Hotkey")
     } else if (key == "AntiAFK") {
-        IniWrite(fields[1].Text,  INI_FILE, "AntiAFK", "Interval")
+        IniWrite(fields[1].Text, INI_FILE, "AntiAFK", "Interval")
         IniWrite(fields[2].Value, INI_FILE, "AntiAFK", "ChatAntiAFK")
     } else if (key == "MoscowLive") {
         IniWrite(fields[1].Value, INI_FILE, "MoscowLive", "CatchAds")
-        IniWrite(fields[2].Text,  INI_FILE, "MoscowLive", "Delay")
+        IniWrite(fields[2].Text, INI_FILE, "MoscowLive", "Delay")
     }
     p := A_ScriptDir "\" scripts[key].file
     DetectHiddenWindows(true)
@@ -250,7 +242,7 @@ SaveSettings(key, *) {
         StopScript(key, "")
         Sleep(200)
         StartScript(key, "")
-        statusBar.Value := "🔄 Настройки сохранены. Скрипт '" scripts[key].name "' перезапущен."
+        statusBar.Value := " Настройки сохранены. Скрипт '" scripts[key].name "' перезапущен."
     } else {
         MsgBox("Настройки для скрипта '" scripts[key].name "' успешно сохранены!", "Успешно", "Iconi")
     }
@@ -295,7 +287,7 @@ UpdateLauncher() {
     }
     ; Создаём обновлятор с надёжным экранированием кавычек
     updaterScript := A_ScriptDir "\_updater.ahk"
-    q := Chr(34)  ; двойная кавычка
+    q := Chr(34) ; двойная кавычка
     updaterContent := "#Requires AutoHotkey v2.0`n"
         . "#SingleInstance Force`n"
         . "Sleep 1000`n"
