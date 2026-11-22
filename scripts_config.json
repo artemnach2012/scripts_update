@@ -4,6 +4,8 @@
       "name": "Армия докладов",
       "file": "ArmyReports.ahk",
       "description": "Автоматические доклады",
+      "beta": false,
+      "settings": [
         {
           "type": "Edit",
           "label": "Клавиша для ручного доклада:",
@@ -56,12 +58,11 @@
           "default": "500"
         }
       ]
-    }
-  ,
-    "beta": {
-      "name": "beta",
-      "file": "beta.ahk",
-      "description": "",
+    },
+    "Helpers": {
+      "name": "Хелперка",
+      "file": "Helpers.ahk",
+      "description": "Административные инструменты и горячие клавиши",
       "beta": false,
       "settings": []
     }
@@ -71,10 +72,5 @@
     "trayOnStart": 0,
     "autoCheckUpdates": 1
   },
-  "removedScripts": {
-    "OldScript": {
-      "removedBy": "artemnach",
-      "removalReason": "Скрипт устарел, используйте новый."
-    }
-  }
+  "removedScripts": {}
 }
