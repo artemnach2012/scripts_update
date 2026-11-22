@@ -4,6 +4,10 @@
 ; @version 1.2.0
 ; остальной код...
 #SingleInstance Force
+INI_FILE := A_ScriptDir "\settings.ini"
+delayMs := IniRead(INI_FILE, "MoscowLive", "Delay", "100") + 0
+if (delayMs < 10)
+    delayMs := 100
 if not A_IsAdmin {
 Run('*RunAs "' A_ScriptFullPath '"')
 ExitApp()
