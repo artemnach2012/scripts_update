@@ -16,8 +16,7 @@ scripts["Launcher"] := { name: "Лаунчер", file: "Launcher.ahk", localVer:
 scripts["ArmyReports"] := { name: "Армия докладов", file: "ArmyReports.ahk", localVer: "0.0.0" }
 scripts["AntiAFK"] := { name: "Анти-АФК", file: "AntiAFK.ahk", localVer: "0.0.0" }
 scripts["MoscowLive"] := { name: "Москва-Live", file: "MoscowLive.ahk", localVer: "0.0.0" }
-scripts["Helpers"] := { name: "Хелперка", file: Helpers.ahk", localVer: "0.0.0" }
-
+scripts["Helpers"] := { name: "Хелперка", file: "Helpers.ahk", localVer: "0.0.0" }
 ; ============================================================
 ; ГРАФИЧЕСКИЙ ИНТЕРФЕЙС
 ; ============================================================
