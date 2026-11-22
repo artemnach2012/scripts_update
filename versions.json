@@ -19,4 +19,9 @@
     "file": "Launcher.ahk",
     "version": "1.0.1"
   }
+  "Helpers": {
+    "name": "Хелперс панель",
+    "file": "Helpers.ahk",
+    "version": "1.0.0"
+  }
 }
