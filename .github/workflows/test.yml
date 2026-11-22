@@ -1,32 +1,82 @@
-name: Test AHK and JSON
+name: Проверка синтаксиса AHK
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
 
 jobs:
-  test-scripts:
+  syntax-check:
     runs-on: windows-latest
+
     steps:
-      - name: Скачивание репозитория
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Проверка JSON конфигов (version.json и scripts_config.json)
+      - name: Установка AutoHotkey v2 (portable)
         shell: pwsh
         run: |
-          Get-ChildItem -Filter *.json | ForEach-Object {
-            Write-Host "Проверяю $($_.Name)..."
-            Get-Content $_.FullName | ConvertFrom-Json | Out-Null
+          $zip = "$env:RUNNER_TEMP\ahk.zip"
+          $dir = "$env:RUNNER_TEMP\ahk"
+          Invoke-WebRequest -Uri "https://www.autohotkey.com/download/ahk-v2.zip" -OutFile $zip
+          Expand-Archive -Path $zip -DestinationPath $dir -Force
+          $exe = Get-ChildItem $dir -Recurse -Filter "AutoHotkey64.exe" | Select-Object -First 1
+          if (-not $exe) { throw "AutoHotkey64.exe не найден в архиве" }
+          Write-Host "Найден: $($exe.FullName)"
+          "AHK_EXE=$($exe.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Проверка синтаксиса всех .ahk
+        shell: pwsh
+        env:
+          AHK_CI: "1"
+        run: |
+          $failed = @()
+          $scripts = Get-ChildItem -Path "." -Recurse -Filter *.ahk |
+                     Where-Object { $_.FullName -notmatch "\\\.git\\" }
+
+          if ($scripts.Count -eq 0) {
+            Write-Host "AHK-скриптов не найдено"
+            exit 0
           }
 
-      - name: Установка AutoHotkey
-        run: choco install autohotkey -y
+          foreach ($s in $scripts) {
+            Write-Host "`n=== Проверка $($s.Name) ==="
 
-      - name: Проверка синтаксиса скриптов
-        shell: pwsh
-        run: |
-          Get-ChildItem -Recurse -Filter *.ahk | ForEach-Object {
-            Write-Host "Тестирую $($_.Name)..."
-            # Попытка запустить с проверкой ошибок без зависания
-            Start-Process "AutoHotkey.exe" -ArgumentList "/ErrorStdOut", "`"$($_.FullName)`"" -NoNewWindow
+            $errFile = "$env:RUNNER_TEMP\err.txt"
+            $outFile = "$env:RUNNER_TEMP\out.txt"
+            Remove-Item $errFile, $outFile -ErrorAction SilentlyContinue
+
+            $proc = Start-Process -FilePath $env:AHK_EXE `
+              -ArgumentList "/ErrorStdOut", "`"$($s.FullName)`"" `
+              -NoNewWindow -PassThru `
+              -RedirectStandardError $errFile `
+              -RedirectStandardOutput $outFile
+
+            # 2 сек на парсинг (ошибки парсинга выводятся сразу, до запуска)
             Start-Sleep -Seconds 2
-            Stop-Process -Name "AutoHotkey*" -ErrorAction SilentlyContinue
+            if (-not $proc.HasExited) {
+              Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
+            }
+            # добиваем возможные дочерние процессы (MoscowLive может породить UAC-копию)
+            Get-Process -Name "AutoHotkey*" -ErrorAction SilentlyContinue |
+              Stop-Process -Force -ErrorAction SilentlyContinue
+
+            $err = if (Test-Path $errFile) {
+              Get-Content $errFile -Raw -ErrorAction SilentlyContinue
+            } else { "" }
+
+            if ($err -match "Error at line|Syntax error|requires AutoHotkey") {
+              Write-Host "❌ FAIL:"
+              Write-Host $err
+              $failed += $s.Name
+            } else {
+              Write-Host "✅ OK"
+            }
           }
+
+          if ($failed.Count -gt 0) {
+            Write-Host "`n❌ Провалено скриптов: $($failed.Count) → $($failed -join ', ')"
+            exit 1
+          }
+
+          Write-Host "`n✅ Все скрипты синтаксически корректны"
