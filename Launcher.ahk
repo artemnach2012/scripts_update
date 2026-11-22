@@ -1,59 +1,118 @@
 #Requires AutoHotkey v2.0
 #SingleInstance Force
 
-; @version 1.0.1
+; @version 1.0.2
 
 ; ============================================================
 ; НАСТРОЙКИ
 ; ============================================================
 GITHUB_REPO := "artemnach2012/scripts_update"
-RAW_BASE := "https://raw.githubusercontent.com/" GITHUB_REPO "/main/"
-INI_FILE := A_ScriptDir "\settings.ini"
+RAW_BASE    := "https://raw.githubusercontent.com/" GITHUB_REPO "/main/"
+INI_FILE    := A_ScriptDir "\settings.ini"
+CONFIG_URL  := RAW_BASE "scripts_config.json"
+VERSION_URL := RAW_BASE "version.json"
 
-; Список скриптов – лаунчер помечаем флагом isLauncher
 scripts := Map()
-scripts["Launcher"] := { name: "Лаунчер", file: "Launcher.ahk", localVer: "0.0.0", isLauncher: true }
+scripts["Launcher"]    := { name: "Лаунчер",        file: "Launcher.ahk",    localVer: "0.0.0", isLauncher: true }
 scripts["ArmyReports"] := { name: "Армия докладов", file: "ArmyReports.ahk", localVer: "0.0.0" }
-scripts["AntiAFK"] := { name: "Анти-АФК", file: "AntiAFK.ahk", localVer: "0.0.0" }
-scripts["MoscowLive"] := { name: "Москва-Live", file: "MoscowLive.ahk", localVer: "0.0.0" }
-scripts["Helpers"] := { name: "Хелперка", file: "Helpers.ahk", localVer: "0.0.0" }
+scripts["AntiAFK"]     := { name: "Анти-АФК",       file: "AntiAFK.ahk",     localVer: "0.0.0" }
+scripts["MoscowLive"]  := { name: "Москва-Live",    file: "MoscowLive.ahk",  localVer: "0.0.0" }
+scripts["Helpers"]     := { name: "Хелперка",       file: "Helpers.ahk",     localVer: "0.0.0" }
+
 ; ============================================================
-; ГРАФИЧЕСКИЙ ИНТЕРФЕЙС
+; ЗАГРУЗКА КОНФИГА
+; ============================================================
+GetDefaultConfig() {
+    cfg := Map()
+    s := Map()
+    s["ArmyReports"] := Map("name", "Армия докладов", "settings", [
+        Map("type", "Edit", "label", "Пост:", "section", "ArmyReports", "key", "Post", "default", "КПП-1"),
+        Map("type", "Edit", "label", "Интервал (мин):", "section", "ArmyReports", "key", "Interval", "default", "10"),
+        Map("type", "CheckBox", "label", "Автодоклад по таймеру", "section", "ArmyReports", "key", "AutoReport", "default", 0)
+    ])
+    s["AntiAFK"] := Map("name", "Анти-АФК", "settings", [
+        Map("type", "Edit", "label", "Интервал (сек):", "section", "AntiAFK", "key", "Interval", "default", "30"),
+        Map("type", "CheckBox", "label", "Режим чата", "section", "AntiAFK", "key", "ChatAntiAFK", "default", 0),
+        Map("type", "Edit", "label", "Горячая клавиша:", "section", "AntiAFK", "key", "Hotkey", "default", "F8")
+    ])
+    s["MoscowLive"] := Map("name", "Москва-Live", "settings", [
+        Map("type", "Edit", "label", "Задержка (мс):", "section", "MoscowLive", "key", "Delay", "default", "100")
+    ])
+    s["Helpers"] := Map("name", "Хелперка", "settings", [
+        Map("type", "Edit", "label", "Привязки (F1=/me текст{Enter}, по одной на строку):",
+            "section", "Helpers", "key", "Bindings", "multi", 1, "height", 150,
+            "default", "F1=/me поправил бронежилет{Enter}`nF2=/do Бронежилет на груди.{Enter}")
+    ])
+    cfg["scripts"] := s
+    return cfg
+}
+
+LoadConfigFromNet() {
+    txt := HTTPGet(CONFIG_URL)
+    if (txt = "")
+        return ""
+    try {
+        obj := ParseJSON(txt)
+        if (IsObject(obj) && obj.Has("scripts"))
+            return obj
+    }
+    return ""
+}
+
+; ============================================================
+; GUI
 ; ============================================================
 mainGui := Gui(, "Панель управления скриптами")
 mainGui.BackColor := "2A2A2A"
 mainGui.SetFont("s10 cWhite", "Segoe UI")
 
-; Формируем имена вкладок – порядок важен!
-tabNames := ["Главная"]
-for k, v in scripts
-    tabNames.Push(v.name)
+cfg := LoadConfigFromNet()
+if (!IsObject(cfg) || !cfg.Has("scripts"))
+    cfg := GetDefaultConfig()
+configScripts := cfg["scripts"]
+
+; Имена вкладок: Главная, Профиль, [скрипты без лаунчера]
+tabNames := ["Главная", "Профиль"]
+scriptTabIndex := Map()
+nextTabIdx := 3
+for key, info in scripts {
+    if (info.HasOwnProp("isLauncher") && info.isLauncher)
+        continue
+    tabNames.Push(info.name)
+    scriptTabIndex[key] := nextTabIdx
+    nextTabIdx++
+}
 
 tabPanel := mainGui.Add("Tab3", "x10 y10 w610 h380 cWhite", tabNames)
 
-; ---------- Вкладка "Главная" ----------
+; ---------- Главная ----------
 tabPanel.UseTab(1)
-mainGui.SetFont("s12 Bold cWhite"), mainGui.Add("Text", "x20 y45 w590 Center", "Управление скриптами AutoHotkey")
-mainGui.SetFont("s9 Italic cFF5555"), mainGui.Add("Text", "x20 y70 w590 Center", "Данное приложение находится в статусе: БЕТА-ВЕРСИЯ")
+mainGui.SetFont("s12 Bold cWhite")
+mainGui.Add("Text", "x20 y45 w590 Center", "Управление скриптами AutoHotkey")
+mainGui.SetFont("s9 Italic cFF5555")
+mainGui.Add("Text", "x20 y70 w590 Center", "БЕТА-ВЕРСИЯ")
 mainGui.SetFont("s10 Bold cWhite")
-mainGui.Add("Text", "x30 y100 w150", "Название"), mainGui.Add("Text", "x190 y100 w80", "Версия")
-mainGui.Add("Text", "x280 y100 w100", "Статус"), mainGui.Add("Text", "x390 y100 w210", "Действия")
+mainGui.Add("Text", "x30 y100 w150", "Название")
+mainGui.Add("Text", "x190 y100 w80", "Версия")
+mainGui.Add("Text", "x280 y100 w100", "Статус")
+mainGui.Add("Text", "x390 y100 w210", "Действия")
 
-guiControls := Map(), yPos := 130
+guiControls := Map()
+yPos := 130
 for key, info in scripts {
     isLauncher := info.HasOwnProp("isLauncher") && info.isLauncher
     mainGui.SetFont("s10 Norm cWhite")
     mainGui.Add("Text", "x30 y" yPos " w150", info.name)
-    verText := mainGui.Add("Text", "x190 y" yPos " w80 cYellow", "—")
+    verText    := mainGui.Add("Text", "x190 y" yPos " w80 cYellow", "—")
     statusText := mainGui.Add("Text", "x280 y" yPos " w100 cGray", isLauncher ? "Активен" : "Не запущен")
     mainGui.SetFont("s9 cBlack")
     if (isLauncher) {
         btnStart := ""
-        btnStop := ""
+        btnStop  := ""
         (btnUpdate := mainGui.Add("Button", "x390 y" yPos " w65", " Обн.")).BackColor := "2196F3"
     } else {
         (btnStart := mainGui.Add("Button", "x390 y" yPos " w65", "▶ Старт")).BackColor := "4CAF50"
-        (btnStop := mainGui.Add("Button", "x460 y" yPos " w65 Disabled", "⏹ Стоп")).BackColor := "F44336"
+        (btnStop  := mainGui.Add("Button", "x460 y" yPos " w65 Disabled", "⏹ Стоп")).BackColor := "F44336"
         (btnUpdate := mainGui.Add("Button", "x530 y" yPos " w65", " Обн.")).BackColor := "2196F3"
     }
     guiControls[key] := { verText: verText, statusText: statusText, btnStart: btnStart, btnStop: btnStop, btnUpdate: btnUpdate }
@@ -69,46 +128,82 @@ mainGui.SetFont("s9 cBlack")
 (btnUpdateAll := mainGui.Add("Button", "x30 y" (yPos + 15) " w150", " Обновить все")).BackColor := "4CAF50"
 btnUpdateAll.OnEvent("Click", UpdateAllScripts)
 
-; ---------- Вкладки настроек (только для обычных скриптов) ----------
+; ---------- Профиль ----------
+tabPanel.UseTab(2)
+mainGui.SetFont("s12 Bold cWhite")
+mainGui.Add("Text", "x30 y50 w550", "👤 Профиль игрока")
+mainGui.SetFont("s9 cGray")
+mainGui.Add("Text", "x30 y75 w550", "Эти данные подставляют скрипты в команды отыгровки.")
+
+mainGui.SetFont("s10 cWhite")
+mainGui.Add("Text", "x40 y110 w190", "Имя Фамилия:")
+edtCharName := mainGui.Add("Edit", "x230 y107 w340 Background3A3A3A cWhite", IniRead(INI_FILE, "Profile", "CharName", ""))
+
+mainGui.Add("Text", "x40 y145 w190", "Статик ID:")
+edtStaticID := mainGui.Add("Edit", "x230 y142 w340 Background3A3A3A cWhite", IniRead(INI_FILE, "Profile", "StaticID", ""))
+
+mainGui.Add("Text", "x40 y180 w190", "Фракция:")
+edtFaction := mainGui.Add("Edit", "x230 y177 w340 Background3A3A3A cWhite", IniRead(INI_FILE, "Profile", "Faction", ""))
+
+mainGui.Add("Text", "x40 y215 w190", "Звание / Должность:")
+edtRank := mainGui.Add("Edit", "x230 y212 w340 Background3A3A3A cWhite", IniRead(INI_FILE, "Profile", "Rank", ""))
+
+mainGui.Add("Text", "x40 y250 w190", "Пост / Подразделение:")
+edtPost := mainGui.Add("Edit", "x230 y247 w340 Background3A3A3A cWhite", IniRead(INI_FILE, "Profile", "Post", ""))
+
+mainGui.SetFont("s10 cBlack Bold")
+(btnSaveProfile := mainGui.Add("Button", "x40 y300 w200 h30", "💾 Сохранить профиль")).BackColor := "4CAF50"
+btnSaveProfile.OnEvent("Click", SaveProfile)
+
+; ---------- Вкладки настроек ----------
 configFields := Map()
-tabIndex := 2
-for key, info in scripts {
-    if (info.HasOwnProp("isLauncher") && info.isLauncher) {
-        tabIndex += 1
+for key, cfgInfo in configScripts {
+    if (!scriptTabIndex.Has(key))
         continue
-    }
-    tabPanel.UseTab(tabIndex)
-    tabIndex += 1
-    mainGui.SetFont("s12 Bold cWhite"), mainGui.Add("Text", "x30 y50 w550", "Настройки: " info.name)
-    mainGui.SetFont("s10 Bold cFF5555")
-    mainGui.Add("Text", "x30 y80 w550", "⚠️ ВНИМАНИЕ: Настройки в данный момент НЕ РАБОТАЮТ!")
-    mainGui.SetFont("s10 Norm cWhite")
+    tabPanel.UseTab(scriptTabIndex[key])
+    displayName := cfgInfo.Has("name") ? cfgInfo["name"] : scripts[key].name
+    mainGui.SetFont("s12 Bold cWhite")
+    mainGui.Add("Text", "x30 y50 w550", "Настройки: " displayName)
+    mainGui.SetFont("s9 cGray")
+    mainGui.Add("Text", "x30 y75 w550", "Изменения сохраняются в settings.ini и применяются при перезапуске.")
 
-    if (key == "ArmyReports") {
-        cfg1 := mainGui.Add("CheckBox", "x40 y115 w300", "Включить автоматический доклад по таймеру")
-        cfg1.Value := IniRead(INI_FILE, "ArmyReports", "AutoReport", 0)
-        mainGui.Add("Text", "x40 y155", "Клавиша для ручного доклада:")
-        cfg2 := mainGui.Add("Edit", "x250 y152 w100 Background3A3A3A cWhite", IniRead(INI_FILE, "ArmyReports", "Hotkey", "F8"))
-        configFields["ArmyReports"] := [cfg1, cfg2]
-    }
-    else if (key == "AntiAFK") {
-        mainGui.Add("Text", "x40 y115", "Интервал между действиями (в секундах):")
-        cfg1 := mainGui.Add("Edit", "x320 y112 w80 Background3A3A3A cWhite Number", IniRead(INI_FILE, "AntiAFK", "Interval", "30"))
-        cfg2 := mainGui.Add("CheckBox", "x40 y155 w300", "Отправлять случайный символ в чат вместо прыжка")
-        cfg2.Value := IniRead(INI_FILE, "AntiAFK", "ChatAntiAFK", 0)
-        configFields["AntiAFK"] := [cfg1, cfg2]
-    }
-    else if (key == "MoscowLive") {
-        cfg1 := mainGui.Add("CheckBox", "x40 y115 w300", "Автоматически ловить объявления на сервере")
-        cfg1.Value := IniRead(INI_FILE, "MoscowLive", "CatchAds", 0)
-        mainGui.Add("Text", "x40 y155", "Задержка перед редактированием (мс):")
-        cfg2 := mainGui.Add("Edit", "x300 y152 w100 Background3A3A3A cWhite Number", IniRead(INI_FILE, "MoscowLive", "Delay", "500"))
-        configFields["MoscowLive"] := [cfg1, cfg2]
-    }
+    settingsArr := cfgInfo.Has("settings") ? cfgInfo["settings"] : []
+    if !(settingsArr is Array)
+        settingsArr := []
 
-    mainGui.SetFont("s9 cBlack")
-    mainGui.Add("Button", "x40 y330 w150", " Сохранить").OnEvent("Click", SaveSettings.Bind(key))
+    ctrls := []
+    yPos := 105
+    for setting in settingsArr {
+        sType    := setting.Has("type")    ? setting["type"]    : "Edit"
+        sLabel   := setting.Has("label")   ? setting["label"]   : ""
+        sSection := setting.Has("section") ? setting["section"] : key
+        sKey     := setting.Has("key")     ? setting["key"]     : ""
+        sDef     := setting.Has("default") ? setting["default"] : ""
+        sMulti   := setting.Has("multi")   ? setting["multi"]   : 0
+        sHeight  := setting.Has("height")  ? setting["height"]  : 24
+        curVal   := IniRead(INI_FILE, sSection, sKey, String(sDef))
+
+        mainGui.SetFont("s10 cWhite")
+        if (sType = "Edit") {
+            mainGui.Add("Text", "x40 y" yPos " w550", sLabel)
+            opts := "x40 y" (yPos + 22) " w540 Background3A3A3A cWhite" . (sMulti ? " Multi h" sHeight : "")
+            ctrl := mainGui.Add("Edit", opts, curVal)
+            ctrls.Push(Map("type", "Edit", "ctrl", ctrl, "section", sSection, "key", sKey))
+            yPos += 22 + (sMulti ? sHeight + 12 : 32)
+        } else if (sType = "CheckBox") {
+            ctrl := mainGui.Add("CheckBox", "x40 y" yPos " w540", sLabel)
+            ctrl.Value := curVal
+            ctrls.Push(Map("type", "CheckBox", "ctrl", ctrl, "section", sSection, "key", sKey))
+            yPos += 30
+        }
+    }
+    configFields[key] := ctrls
+
+    mainGui.SetFont("s9 cBlack Bold")
+    (btnSave := mainGui.Add("Button", "x40 y330 w180 h28", "💾 Сохранить")).BackColor := "2196F3"
+    btnSave.OnEvent("Click", SaveSettings.Bind(key))
 }
+
 tabPanel.UseTab()
 
 mainGui.SetFont("s10 cGray")
@@ -116,9 +211,49 @@ statusBar := mainGui.Add("Text", "x15 y400 w610", "Готов к работе.")
 mainGui.Show("w630 h430")
 
 ; ============================================================
-; ФУНКЦИИ
+; ПРОФИЛЬ
 ; ============================================================
+SaveProfile(*) {
+    global INI_FILE, statusBar
+    global edtCharName, edtStaticID, edtFaction, edtRank, edtPost
+    IniWrite(edtCharName.Value, INI_FILE, "Profile", "CharName")
+    IniWrite(edtStaticID.Value, INI_FILE, "Profile", "StaticID")
+    IniWrite(edtFaction.Value,  INI_FILE, "Profile", "Faction")
+    IniWrite(edtRank.Value,     INI_FILE, "Profile", "Rank")
+    IniWrite(edtPost.Value,     INI_FILE, "Profile", "Post")
+    statusBar.Value := "✅ Профиль сохранён"
+    MsgBox("✅ Профиль сохранён!`n`nПерезапусти активные скрипты, чтобы они подхватили данные.", "OK", "Iconi")
+}
 
+; ============================================================
+; НАСТРОЙКИ
+; ============================================================
+SaveSettings(key, *) {
+    global configFields, INI_FILE, statusBar, scripts
+    ctrls := configFields[key]
+    for item in ctrls {
+        if (item["type"] = "Edit")
+            IniWrite(item["ctrl"].Value, INI_FILE, item["section"], item["key"])
+        else if (item["type"] = "CheckBox")
+            IniWrite(item["ctrl"].Value, INI_FILE, item["section"], item["key"])
+    }
+    p := A_ScriptDir "\" scripts[key].file
+    DetectHiddenWindows(true)
+    if WinExist(p " ahk_class AutoHotkey") {
+        StopScript(key, "")
+        Sleep(500)
+        StartScript(key, "")
+        statusBar.Value := "✅ Настройки сохранены. Скрипт перезапущен."
+    } else {
+        statusBar.Value := "✅ Настройки сохранены: " scripts[key].name
+    }
+    DetectHiddenWindows(false)
+    MsgBox("Настройки для '" scripts[key].name "' сохранены.", "OK", "Iconi")
+}
+
+; ============================================================
+; УТИЛИТЫ
+; ============================================================
 HideFile(p) {
     if FileExist(p)
         FileSetAttrib("+H", p)
@@ -147,6 +282,7 @@ HTTPGet(url) {
     return ""
 }
 
+; Простой парсер плоского JSON: {"Key": "Value", ...}
 ParseSimpleJSON(j) {
     obj := Map()
     j := Trim(j, "{} `t`n`r")
@@ -161,11 +297,156 @@ ParseSimpleJSON(j) {
 }
 
 GetRemoteVersions() {
-    jsonText := HTTPGet(RAW_BASE "version.json")
+    jsonText := HTTPGet(VERSION_URL)
     return (jsonText != "") ? ParseSimpleJSON(jsonText) : Map()
 }
 
+; ============================================================
+; ПОЛНЫЙ JSON-ПАРСЕР (для scripts_config.json)
+; ============================================================
+ParseJSON(s) {
+    p := 1
+    return _jValue(s, &p)
+}
+
+_jValue(s, &p) {
+    _jWS(s, &p)
+    if (p > StrLen(s))
+        return ""
+    c := SubStr(s, p, 1)
+    if (c = "{")
+        return _jObj(s, &p)
+    if (c = "[")
+        return _jArr(s, &p)
+    if (c = Chr(34))
+        return _jStr(s, &p)
+    if (SubStr(s, p, 4) = "true") {
+        p += 4
+        return true
+    }
+    if (SubStr(s, p, 5) = "false") {
+        p += 5
+        return false
+    }
+    if (SubStr(s, p, 4) = "null") {
+        p += 4
+        return ""
+    }
+    return _jNum(s, &p)
+}
+
+_jWS(s, &p) {
+    while (p <= StrLen(s) && InStr(" `t`n`r", SubStr(s, p, 1)))
+        p++
+}
+
+_jObj(s, &p) {
+    obj := Map()
+    p++
+    _jWS(s, &p)
+    if (SubStr(s, p, 1) = "}") {
+        p++
+        return obj
+    }
+    loop {
+        _jWS(s, &p)
+        if (SubStr(s, p, 1) != Chr(34))
+            break
+        key := _jStr(s, &p)
+        _jWS(s, &p)
+        if (SubStr(s, p, 1) = ":")
+            p++
+        val := _jValue(s, &p)
+        obj[key] := val
+        _jWS(s, &p)
+        c := SubStr(s, p, 1)
+        if (c = ",") {
+            p++
+            continue
+        }
+        if (c = "}") {
+            p++
+            break
+        }
+        break
+    }
+    return obj
+}
+
+_jArr(s, &p) {
+    arr := []
+    p++
+    _jWS(s, &p)
+    if (SubStr(s, p, 1) = "]") {
+        p++
+        return arr
+    }
+    loop {
+        val := _jValue(s, &p)
+        arr.Push(val)
+        _jWS(s, &p)
+        c := SubStr(s, p, 1)
+        if (c = ",") {
+            p++
+            continue
+        }
+        if (c = "]") {
+            p++
+            break
+        }
+        break
+    }
+    return arr
+}
+
+_jStr(s, &p) {
+    p++
+    result := ""
+    loop {
+        if (p > StrLen(s))
+            break
+        c := SubStr(s, p, 1)
+        if (c = Chr(92)) {
+            nxt := SubStr(s, p + 1, 1)
+            if (nxt = "n")
+                result .= "`n"
+            else if (nxt = "r")
+                result .= "`r"
+            else if (nxt = "t")
+                result .= "`t"
+            else if (nxt = Chr(34))
+                result .= Chr(34)
+            else if (nxt = Chr(92))
+                result .= Chr(92)
+            else if (nxt = "/")
+                result .= "/"
+            else
+                result .= nxt
+            p += 2
+            continue
+        }
+        if (c = Chr(34)) {
+            p++
+            break
+        }
+        result .= c
+        p++
+    }
+    return result
+}
+
+_jNum(s, &p) {
+    start := p
+    while (p <= StrLen(s) && InStr("0123456789+-.eE", SubStr(s, p, 1)))
+        p++
+    return SubStr(s, start, p - start) + 0
+}
+
+; ============================================================
+; УПРАВЛЕНИЕ СКРИПТАМИ
+; ============================================================
 StopScript(key, *) {
+    global scripts, guiControls, statusBar
     p := A_ScriptDir "\" scripts[key].file
     DetectHiddenWindows(true)
     SetTitleMatchMode(2)
@@ -176,16 +457,14 @@ StopScript(key, *) {
             Sleep(250)
         }
         if WinExist(winTitle) {
-            try {
-                WinKill(winTitle)
-                Sleep(250)
-            }
+            try { WinKill(winTitle) }
+            Sleep(250)
         }
         if WinExist(winTitle) {
             try {
-                scriptPID := WinGetPID(winTitle)
-                if scriptPID
-                    ProcessClose(scriptPID)
+                pid := WinGetPID(winTitle)
+                if pid
+                    ProcessClose(pid)
                 Sleep(250)
             }
         }
@@ -199,6 +478,7 @@ StopScript(key, *) {
 }
 
 StartScript(key, *) {
+    global scripts, guiControls, statusBar
     info := scripts[key]
     p := A_ScriptDir "\" info.file
     if !FileExist(p) {
@@ -223,58 +503,22 @@ StartScript(key, *) {
     statusBar.Value := "▶ Запущен: " info.name
 }
 
-SaveSettings(key, *) {
-    fields := configFields[key]
-    if (key == "ArmyReports") {
-        IniWrite(fields[1].Value, INI_FILE, "ArmyReports", "AutoReport")
-        IniWrite(fields[2].Text, INI_FILE, "ArmyReports", "Hotkey")
-    } else if (key == "AntiAFK") {
-        IniWrite(fields[1].Text, INI_FILE, "AntiAFK", "Interval")
-        IniWrite(fields[2].Value, INI_FILE, "AntiAFK", "ChatAntiAFK")
-    } else if (key == "MoscowLive") {
-        IniWrite(fields[1].Value, INI_FILE, "MoscowLive", "CatchAds")
-        IniWrite(fields[2].Text, INI_FILE, "MoscowLive", "Delay")
-    }
-    p := A_ScriptDir "\" scripts[key].file
-    DetectHiddenWindows(true)
-    if WinExist(p " ahk_class AutoHotkey") {
-        StopScript(key, "")
-        Sleep(200)
-        StartScript(key, "")
-        statusBar.Value := " Настройки сохранены. Скрипт '" scripts[key].name "' перезапущен."
-    } else {
-        MsgBox("Настройки для скрипта '" scripts[key].name "' успешно сохранены!", "Успешно", "Iconi")
-    }
-    DetectHiddenWindows(false)
-}
-
 ; ============================================================
-; ОБНОВЛЕНИЕ ЛАУНЧЕРА (САМООБНОВЛЕНИЕ)
+; ОБНОВЛЕНИЕ
 ; ============================================================
 UpdateLauncher() {
+    global scripts, guiControls, statusBar
     info := scripts["Launcher"]
     p := A_ScriptDir "\" info.file
     rem := GetRemoteVersions()
     rv := rem.Has("Launcher") ? rem["Launcher"] : ""
-    if (rv == "") {
-        scriptText := HTTPGet(RAW_BASE info.file)
-        if (scriptText != "") {
-            Loop Parse, scriptText, "`n", "`r" {
-                if (A_Index <= 10 && RegExMatch(A_LoopField, "; @version\s+([\d\.]+)", &m)) {
-                    rv := m.1
-                    break
-                }
-            }
-        }
-        if (rv == "") {
-            MsgBox("Не удалось получить версию для лаунчера.", "Ошибка", "Iconi")
-            return false
-        }
+    if (rv = "") {
+        MsgBox("Не удалось получить версию лаунчера.", "Ошибка", "Iconi")
+        return false
     }
     lv := GetLocalVersion(p)
     if (rv == lv && lv != "0.0.0") {
         MsgBox("У вас уже последняя версия лаунчера (" lv ").", "Информация", "Iconi")
-        guiControls["Launcher"].btnUpdate.Enabled := false
         return true
     }
     newFile := A_ScriptDir "\Launcher_new.ahk"
@@ -284,9 +528,8 @@ UpdateLauncher() {
         MsgBox("Ошибка скачивания нового лаунчера.", "Ошибка", "Iconi")
         return false
     }
-    ; Создаём обновлятор с надёжным экранированием кавычек
     updaterScript := A_ScriptDir "\_updater.ahk"
-    q := Chr(34) ; двойная кавычка
+    q := Chr(34)
     updaterContent := "#Requires AutoHotkey v2.0`n"
         . "#SingleInstance Force`n"
         . "Sleep 1000`n"
@@ -307,31 +550,17 @@ UpdateLauncher() {
     ExitApp()
 }
 
-; ============================================================
-; ОБНОВЛЕНИЕ ЛЮБОГО СКРИПТА (ВКЛЮЧАЯ ЛАУНЧЕР)
-; ============================================================
 UpdateScript(key, *) {
-    if (key == "Launcher") {
+    global scripts, guiControls, statusBar
+    if (key == "Launcher")
         return UpdateLauncher()
-    }
     info := scripts[key]
     p := A_ScriptDir "\" info.file
     rem := GetRemoteVersions()
     rv := rem.Has(key) ? rem[key] : ""
-    if (rv == "") {
-        scriptText := HTTPGet(RAW_BASE info.file)
-        if (scriptText != "") {
-            Loop Parse, scriptText, "`n", "`r" {
-                if (A_Index <= 10 && RegExMatch(A_LoopField, "; @version\s+([\d\.]+)", &m)) {
-                    rv := m.1
-                    break
-                }
-            }
-        }
-        if (rv == "") {
-            MsgBox("Не удалось получить версию для " info.name, "Ошибка", "Iconi")
-            return false
-        }
+    if (rv = "") {
+        MsgBox("Не удалось получить версию для " info.name, "Ошибка", "Iconi")
+        return false
     }
     lv := GetLocalVersion(p)
     if (rv == lv && lv != "0.0.0") {
@@ -354,27 +583,29 @@ UpdateScript(key, *) {
         info.localVer := rv
         guiControls[key].verText.Value := rv
         guiControls[key].btnUpdate.Enabled := false
-        statusBar.Value := "✅ Обновлён: " info.name " до версии " rv
-        MsgBox("Скрипт " info.name " обновлён до версии " rv, "Успешно", "Iconi")
+        statusBar.Value := "✅ Обновлён: " info.name " до " rv
+        MsgBox("Скрипт " info.name " обновлён до " rv, "Успешно", "Iconi")
         return true
     } catch {
-        MsgBox("Критическая ошибка при скачивании " info.name, "Ошибка", "Iconi")
+        MsgBox("Ошибка при скачивании " info.name, "Ошибка", "Iconi")
         return false
     }
 }
 
 UpdateAllScripts(*) {
+    global scripts, statusBar
     statusBar.Value := "Проверка обновлений..."
     updated := 0
     for k, v in scripts {
         if UpdateScript(k, "")
             updated++
     }
-    MsgBox(updated ? "Обновление завершено. Обновлено: " updated : "Все скрипты уже актуальны.", "Результат", "Iconi")
+    MsgBox(updated ? "Обновление завершено. Обновлено: " updated : "Все скрипты актуальны.", "Результат", "Iconi")
     statusBar.Value := "Обновление завершено."
 }
 
 CheckAllVersions() {
+    global scripts, guiControls, statusBar
     rem := GetRemoteVersions()
     for k, v in scripts {
         p := A_ScriptDir "\" v.file
@@ -393,10 +624,8 @@ CheckAllVersions() {
     statusBar.Value := "✅ Проверка версий завершена"
 }
 
-; Запускаем проверку версий при старте
 SetTimer(CheckAllVersions, -500)
 
-; Горячая клавиша для выхода
 ~Esc:: {
     if WinActive("ahk_class AutoHotkeyGUI")
         ExitApp()
