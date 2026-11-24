@@ -16,8 +16,8 @@ Toggle := false
 try {
     Hotkey(hotkeyStr, ToggleAFK)
 } catch {
-    MsgBox("Неверная горячая клавиша: " hotkeyStr "`nИспользуется F8.", "Анти-АФК", "Icon!")
     Hotkey("F8", ToggleAFK)
+    hotkeyStr := "F8"
 }
 
 ToggleAFK(*) {
