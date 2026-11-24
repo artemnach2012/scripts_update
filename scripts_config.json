@@ -23,10 +23,14 @@
       ]
     },
     "Helpers": {
-      "name": "Хелперка",
+      "name": "Хелперка (биндер)",
       "settings": [
         { "type": "Edit", "label": "Привязки (формат: F1=/me текст{Enter}, по одной на строку):", "section": "Helpers", "key": "Bindings", "multi": 1, "height": 150, "default": "F1=/me поправил бронежилет{Enter}\nF2=/do Бронежилет на груди.{Enter}" }
       ]
+    },
+    "AdminTools": {
+      "name": "Админ-тулза",
+      "settings": []
     }
   }
 }
