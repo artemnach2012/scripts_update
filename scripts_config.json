@@ -2,35 +2,75 @@
   "scripts": {
     "ArmyReports": {
       "name": "Армия докладов",
+      "file": "ArmyReports.ahk",
+      "description": "Автоматические доклады",
+      "beta": false,
       "settings": [
-        { "type": "Edit", "label": "Пост:", "section": "ArmyReports", "key": "Post", "default": "КПП-1" },
-        { "type": "Edit", "label": "Интервал (мин):", "section": "ArmyReports", "key": "Interval", "default": "10" },
-        { "type": "CheckBox", "label": "Автодоклад по таймеру", "section": "ArmyReports", "key": "AutoReport", "default": 0 }
+        {
+          "type": "Edit",
+          "label": "Клавиша для ручного доклада:",
+          "iniSection": "ArmyReports",
+          "iniKey": "Hotkey",
+          "default": "F8"
+        }
       ]
     },
     "AntiAFK": {
       "name": "Анти-АФК",
+      "file": "AntiAFK.ahk",
+      "description": "Защита от AFK",
+      "beta": false,
       "settings": [
-        { "type": "Edit", "label": "Интервал между действиями (сек):", "section": "AntiAFK", "key": "Interval", "default": "30" },
-        { "type": "CheckBox", "label": "Режим чата (отправлять символ вместо WASD)", "section": "AntiAFK", "key": "ChatAntiAFK", "default": 0 },
-        { "type": "Edit", "label": "Клавиша вкл/выкл:", "section": "AntiAFK", "key": "Hotkey", "default": "F8" }
+        {
+          "type": "Edit",
+          "label": "Интервал (сек):",
+          "iniSection": "AntiAFK",
+          "iniKey": "Interval",
+          "default": "30"
+        },
+        {
+          "type": "CheckBox",
+          "label": "Отправлять символ в чат",
+          "iniSection": "AntiAFK",
+          "iniKey": "ChatAntiAFK",
+          "default": 0
+        }
       ]
     },
     "MoscowLive": {
       "name": "Москва-Live",
+      "file": "MoscowLive.ahk",
+      "description": "Скрипт для Москва-Live",
+      "beta": false,
       "settings": [
-        { "type": "Edit", "label": "Задержка перед вставкой (мс):", "section": "MoscowLive", "key": "Delay", "default": "100" }
+        {
+          "type": "CheckBox",
+          "label": "Ловить объявления",
+          "iniSection": "MoscowLive",
+          "iniKey": "CatchAds",
+          "default": 0
+        },
+        {
+          "type": "Edit",
+          "label": "Задержка (мс):",
+          "iniSection": "MoscowLive",
+          "iniKey": "Delay",
+          "default": "500"
+        }
       ]
     },
     "Helpers": {
-      "name": "Хелперка (биндер)",
-      "settings": [
-        { "type": "Edit", "label": "Привязки (формат: F1=/me текст{Enter}, по одной на строку):", "section": "Helpers", "key": "Bindings", "multi": 1, "height": 150, "default": "F1=/me поправил бронежилет{Enter}\nF2=/do Бронежилет на груди.{Enter}" }
-      ]
-    },
-    "AdminTools": {
-      "name": "Админ-тулза",
+      "name": "Хелперка",
+      "file": "Helpers.ahk",
+      "description": "Административные инструменты и горячие клавиши",
+      "beta": false,
       "settings": []
     }
-  }
+  },
+  "launcherSettings": {
+    "autoStart": 0,
+    "trayOnStart": 0,
+    "autoCheckUpdates": 1
+  },
+  "removedScripts": {}
 }
