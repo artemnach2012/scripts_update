@@ -1,53 +1,36 @@
 #Requires AutoHotkey v2.0
 #SingleInstance Force
-; @version 2.1.0
+#MaxThreadsPerHotkey 2
 
-INI_FILE := A_ScriptDir "\settings.ini"
-intervalSec := IniRead(INI_FILE, "AntiAFK", "Interval", "30") + 0
-chatMode    := IniRead(INI_FILE, "AntiAFK", "ChatAntiAFK", 0) + 0
-hotkeyStr   := IniRead(INI_FILE, "AntiAFK", "Hotkey", "F8")
-if (intervalSec < 5)
-    intervalSec := 30
-if (hotkeyStr = "")
-    hotkeyStr := "F8"
+; @version 2.0.0
 
 Toggle := false
 
-try {
-    Hotkey(hotkeyStr, ToggleAFK)
-} catch {
-    Hotkey("F8", ToggleAFK)
-    hotkeyStr := "F8"
-}
-
-ToggleAFK(*) {
+F8:: {
     global Toggle
     Toggle := !Toggle
-    ToolTip(Toggle ? "Анти-АФК: ВКЛ" : "Анти-АФК: ВЫКЛ", 100, 100)
-    SetTimer(() => ToolTip(), -1500)
-    if Toggle
-        SetTimer(DoAction, -100)
-    else
-        SetTimer(DoAction, 0)
+    if Toggle {
+        ToolTip("Random WASD: ВКЛ", 100, 100)
+        SetTimer(RandomPress, -1)
+    } else {
+        ToolTip("Random WASD: ВЫКЛ", 100, 100)
+        SetTimer(RandomPress, 0)
+        Sleep(1000)
+        ToolTip()
+    }
 }
 
-DoAction() {
-    global Toggle, chatMode, intervalSec
+RandomPress() {
+    global Toggle
     if !Toggle
         return
-    if (chatMode) {
-        chars := [".", ",", " ", "!", "?"]
-        SendInput(chars[Random(1, chars.Length)])
-    } else {
-        keys := ["w", "a", "s", "d"]
-        key := keys[Random(1, keys.Length)]
-        Send("{" key " down}")
-        Sleep(Random(50, 400))
-        Send("{" key " up}")
-    }
+    r := Random(1, 4)
+    key := (r = 1) ? "w" : (r = 2) ? "a" : (r = 3) ? "s" : "d"
+    holdTime := Random(50, 400)
+    nextDelay := Random(200, 1500)
+    Send("{" key " down}")
+    Sleep(holdTime)
+    Send("{" key " up}")
     if Toggle
-        SetTimer(DoAction, -Random(intervalSec * 800, intervalSec * 1200))
+        SetTimer(RandomPress, -nextDelay)
 }
-
-ToolTip("Анти-АФК загружен. Клавиша: " hotkeyStr, 100, 100)
-SetTimer(() => ToolTip(), -2500)
