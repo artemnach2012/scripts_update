@@ -1,7 +1,7 @@
 #Requires AutoHotkey v2.0
 #SingleInstance Force
 
-; @version 1.0.2
+; @version 1.0.3
 
 GITHUB_REPO := "artemnach2012/scripts_update"
 RAW_BASE := "https://raw.githubusercontent.com/" GITHUB_REPO "/main/"
@@ -49,21 +49,14 @@ tabNames := ["Главная"]
 for key, info in scripts
     tabNames.Push(info.name)
 
-tabPanel := mainGui.Add("Tab3",
-    "x10 y10 w610 h380 cWhite",
-    tabNames)
-
+tabPanel := mainGui.Add("Tab3", "x10 y10 w610 h380 cWhite", tabNames)
 tabPanel.UseTab(1)
 
 mainGui.SetFont("s12 Bold cWhite")
-mainGui.Add("Text",
-    "x20 y45 w590 Center",
-    "Управление скриптами AutoHotkey")
+mainGui.Add("Text", "x20 y45 w590 Center", "Управление скриптами AutoHotkey")
 
 mainGui.SetFont("s9 Italic cFF5555")
-mainGui.Add("Text",
-    "x20 y70 w590 Center",
-    "Данное приложение находится в статусе: БЕТА-ВЕРСИЯ")
+mainGui.Add("Text", "x20 y70 w590 Center", "Данное приложение находится в статусе: БЕТА-ВЕРСИЯ")
 
 mainGui.SetFont("s10 Bold cWhite")
 mainGui.Add("Text", "x30 y100 w150", "Название")
@@ -75,14 +68,10 @@ guiControls := Map()
 yPos := 130
 
 for key, info in scripts {
-    isLauncher := info.HasOwnProp("isLauncher")
-        && info.isLauncher
+    isLauncher := info.HasOwnProp("isLauncher") && info.isLauncher
 
     mainGui.SetFont("s10 Norm cWhite")
-
-    mainGui.Add("Text",
-        "x30 y" yPos " w150",
-        info.name)
+    mainGui.Add("Text", "x30 y" yPos " w150", info.name)
 
     verText := mainGui.Add("Text",
         "x190 y" yPos " w80 cYellow",
@@ -97,24 +86,16 @@ for key, info in scripts {
     if isLauncher {
         btnStart := ""
         btnStop := ""
-        btnUpdate := mainGui.Add("Button",
-            "x390 y" yPos " w65",
-            " Обн.")
+        btnUpdate := mainGui.Add("Button", "x390 y" yPos " w65", " Обн.")
         btnUpdate.BackColor := "2196F3"
     } else {
-        btnStart := mainGui.Add("Button",
-            "x390 y" yPos " w65",
-            "▶ Старт")
+        btnStart := mainGui.Add("Button", "x390 y" yPos " w65", "▶ Старт")
         btnStart.BackColor := "4CAF50"
 
-        btnStop := mainGui.Add("Button",
-            "x460 y" yPos " w65 Disabled",
-            "⏹ Стоп")
+        btnStop := mainGui.Add("Button", "x460 y" yPos " w65 Disabled", "⏹ Стоп")
         btnStop.BackColor := "F44336"
 
-        btnUpdate := mainGui.Add("Button",
-            "x530 y" yPos " w65",
-            " Обн.")
+        btnUpdate := mainGui.Add("Button", "x530 y" yPos " w65", " Обн.")
         btnUpdate.BackColor := "2196F3"
     }
 
@@ -127,16 +108,11 @@ for key, info in scripts {
     }
 
     if !isLauncher {
-        btnStart.OnEvent("Click",
-            StartScript.Bind(key))
-
-        btnStop.OnEvent("Click",
-            StopScript.Bind(key))
+        btnStart.OnEvent("Click", StartScript.Bind(key))
+        btnStop.OnEvent("Click", StopScript.Bind(key))
     }
 
-    btnUpdate.OnEvent("Click",
-        UpdateScript.Bind(key))
-
+    btnUpdate.OnEvent("Click", UpdateScript.Bind(key))
     yPos += 35
 }
 
@@ -162,13 +138,10 @@ for key, info in scripts {
     tabIndex += 1
 
     mainGui.SetFont("s12 Bold cWhite")
-    mainGui.Add("Text",
-        "x30 y50 w550",
-        "Настройки: " info.name)
+    mainGui.Add("Text", "x30 y50 w550", "Настройки: " info.name)
 
     mainGui.SetFont("s10 Bold cFF5555")
-    mainGui.Add("Text",
-        "x30 y80 w550",
+    mainGui.Add("Text", "x30 y80 w550",
         "⚠ ВНИМАНИЕ: настройки находятся в доработке!")
 
     mainGui.SetFont("s10 Norm cWhite")
@@ -178,12 +151,10 @@ for key, info in scripts {
             "x40 y115 w300",
             "Включить автоматический доклад по таймеру")
 
-        cfg1.Value := IniRead(
-            INI_FILE,
+        cfg1.Value := IniRead(INI_FILE,
             "ArmyReports",
             "AutoReport",
-            0
-        )
+            0)
 
         mainGui.Add("Text",
             "x40 y155",
@@ -191,12 +162,10 @@ for key, info in scripts {
 
         cfg2 := mainGui.Add("Edit",
             "x250 y152 w100 Background3A3A3A cWhite",
-            IniRead(
-                INI_FILE,
+            IniRead(INI_FILE,
                 "ArmyReports",
                 "Hotkey",
-                "F8"
-            ))
+                "F8"))
 
         configFields["ArmyReports"] := [cfg1, cfg2]
     }
@@ -208,23 +177,19 @@ for key, info in scripts {
 
         cfg1 := mainGui.Add("Edit",
             "x320 y112 w80 Background3A3A3A cWhite Number",
-            IniRead(
-                INI_FILE,
+            IniRead(INI_FILE,
                 "AntiAFK",
                 "Interval",
-                "30"
-            ))
+                "30"))
 
         cfg2 := mainGui.Add("CheckBox",
             "x40 y155 w300",
             "Отправлять случайный символ в чат вместо прыжка")
 
-        cfg2.Value := IniRead(
-            INI_FILE,
+        cfg2.Value := IniRead(INI_FILE,
             "AntiAFK",
             "ChatAntiAFK",
-            0
-        )
+            0)
 
         configFields["AntiAFK"] := [cfg1, cfg2]
     }
@@ -234,12 +199,10 @@ for key, info in scripts {
             "x40 y115 w300",
             "Автоматически ловить объявления на сервере")
 
-        cfg1.Value := IniRead(
-            INI_FILE,
+        cfg1.Value := IniRead(INI_FILE,
             "MoscowLive",
             "CatchAds",
-            0
-        )
+            0)
 
         mainGui.Add("Text",
             "x40 y155",
@@ -247,12 +210,10 @@ for key, info in scripts {
 
         cfg2 := mainGui.Add("Edit",
             "x300 y152 w100 Background3A3A3A cWhite Number",
-            IniRead(
-                INI_FILE,
+            IniRead(INI_FILE,
                 "MoscowLive",
                 "Delay",
-                "500"
-            ))
+                "500"))
 
         configFields["MoscowLive"] := [cfg1, cfg2]
     }
@@ -262,14 +223,12 @@ for key, info in scripts {
     mainGui.Add("Button",
         "x40 y330 w150",
         " Сохранить")
-        .OnEvent("Click",
-            SaveSettings.Bind(key))
+        .OnEvent("Click", SaveSettings.Bind(key))
 }
 
 tabPanel.UseTab()
 
 mainGui.SetFont("s10 cGray")
-
 statusBar := mainGui.Add("Text",
     "x15 y400 w610",
     "Готов к работе.")
@@ -378,11 +337,6 @@ GetRemoteVersion(key, info) {
     return ""
 }
 
-
-; ============================================================
-; УПРАВЛЕНИЕ СКРИПТАМИ
-; ============================================================
-
 StopScript(key, *) {
     p := A_ScriptDir "\" scripts[key].file
 
@@ -392,14 +346,7 @@ StopScript(key, *) {
     winTitle := p " ahk_class AutoHotkey"
 
     if WinExist(winTitle) {
-        try PostMessage(
-            0x0111,
-            65405,
-            0,
-            ,
-            winTitle
-        )
-
+        try PostMessage(0x0111, 65405, 0,, winTitle)
         Sleep(300)
 
         if WinExist(winTitle) {
@@ -410,11 +357,9 @@ StopScript(key, *) {
         if WinExist(winTitle) {
             try {
                 scriptPID := WinGetPID(winTitle)
-
                 if scriptPID
                     ProcessClose(scriptPID)
             }
-
             Sleep(300)
         }
     }
@@ -423,7 +368,6 @@ StopScript(key, *) {
     guiControls[key].statusText.SetFont("cFF5555")
     guiControls[key].btnStart.Enabled := true
     guiControls[key].btnStop.Enabled := false
-
     statusBar.Value := "⏹ Остановлен: " scripts[key].name
 
     DetectHiddenWindows(false)
@@ -436,10 +380,9 @@ StartScript(key, *) {
     if !FileExist(p) {
         MsgBox(
             "Файл " info.file " не найден!"
-                "`nСначала нажмите «Обн.».",
+                "`nСначала нажмите «Обновить».",
             "Ошибка",
-            "Iconi"
-        )
+            "Iconi")
         return
     }
 
@@ -448,23 +391,29 @@ StartScript(key, *) {
     ahkRuntime := A_AhkPath
 
     if A_IsCompiled {
-        if FileExist(
-            "C:\Program Files\AutoHotkey\v2\AutoHotkey64.exe"
-        )
-            ahkRuntime :=
-                "C:\Program Files\AutoHotkey\v2\AutoHotkey64.exe"
+        if FileExist("C:\Program Files\AutoHotkey\v2\AutoHotkey64.exe")
+            ahkRuntime := "C:\Program Files\AutoHotkey\v2\AutoHotkey64.exe"
 
-        else if FileExist(
-            "C:\Program Files\AutoHotkey\v2\AutoHotkey32.exe"
-        )
-            ahkRuntime :=
-                "C:\Program Files\AutoHotkey\v2\AutoHotkey32.exe"
+        else if FileExist("C:\Program Files\AutoHotkey\v2\AutoHotkey32.exe")
+            ahkRuntime := "C:\Program Files\AutoHotkey\v2\AutoHotkey32.exe"
+
+        else
+            ahkRuntime := "AutoHotkey64.exe"
     }
 
     if ahkRuntime == ""
         ahkRuntime := "AutoHotkey64.exe"
 
-    Run('"' ahkRuntime '" "' p '"')
+    try {
+        Run('"' ahkRuntime '" "' p '"')
+    } catch as err {
+        MsgBox(
+            "Не удалось запустить скрипт:"
+                "`n" err.Message,
+            "Ошибка",
+            "Iconi")
+        return
+    }
 
     guiControls[key].statusText.Value := "Запущен"
     guiControls[key].statusText.SetFont("c00FF00")
@@ -477,51 +426,39 @@ SaveSettings(key, *) {
     fields := configFields[key]
 
     if key == "ArmyReports" {
-        IniWrite(
-            fields[1].Value,
+        IniWrite(fields[1].Value,
             INI_FILE,
             "ArmyReports",
-            "AutoReport"
-        )
+            "AutoReport")
 
-        IniWrite(
-            fields[2].Text,
+        IniWrite(fields[2].Text,
             INI_FILE,
             "ArmyReports",
-            "Hotkey"
-        )
+            "Hotkey")
     }
 
     else if key == "AntiAFK" {
-        IniWrite(
-            fields[1].Text,
+        IniWrite(fields[1].Text,
             INI_FILE,
             "AntiAFK",
-            "Interval"
-        )
+            "Interval")
 
-        IniWrite(
-            fields[2].Value,
+        IniWrite(fields[2].Value,
             INI_FILE,
             "AntiAFK",
-            "ChatAntiAFK"
-        )
+            "ChatAntiAFK")
     }
 
     else if key == "MoscowLive" {
-        IniWrite(
-            fields[1].Value,
+        IniWrite(fields[1].Value,
             INI_FILE,
             "MoscowLive",
-            "CatchAds"
-        )
+            "CatchAds")
 
-        IniWrite(
-            fields[2].Text,
+        IniWrite(fields[2].Text,
             INI_FILE,
             "MoscowLive",
-            "Delay"
-        )
+            "Delay")
     }
 
     p := A_ScriptDir "\" scripts[key].file
@@ -534,17 +471,15 @@ SaveSettings(key, *) {
         StartScript(key)
 
         statusBar.Value :=
-            "Настройки сохранены. Скрипт "
-                scripts[key].name
-                " перезапущен."
+            "Настройки сохранены."
+                " Скрипт '" scripts[key].name "' перезапущен."
     } else {
         MsgBox(
             "Настройки для скрипта '"
                 scripts[key].name
                 "' успешно сохранены!",
             "Успешно",
-            "Iconi"
-        )
+            "Iconi")
     }
 
     DetectHiddenWindows(false)
@@ -552,147 +487,7 @@ SaveSettings(key, *) {
 
 
 ; ============================================================
-; САМООБНОВЛЕНИЕ ЛАУНЧЕРА
-; ============================================================
-
-UpdateLauncher() {
-    info := scripts["Launcher"]
-    p := A_ScriptDir "\" info.file
-
-    rv := GetRemoteVersion("Launcher", info)
-
-    if rv == "" {
-        MsgBox(
-            "Не удалось получить версию для лаунчера."
-                "`nПроверьте интернет и файл versions.json",
-            "Ошибка",
-            "Iconi"
-        )
-        return false
-    }
-
-    lv := GetLocalVersion(p)
-
-    if lv != "0.0.0" && lv == rv {
-        MsgBox(
-            "У вас уже последняя версия лаунчера (" lv ").",
-            "Информация",
-            "Iconi"
-        )
-
-        guiControls["Launcher"].btnUpdate.Enabled := false
-        return true
-    }
-
-    newFile := A_ScriptDir "\Launcher_new.ahk"
-    updaterScript := A_ScriptDir "\_updater.ahk"
-
-    try {
-        if FileExist(newFile)
-            FileDelete(newFile)
-
-        if FileExist(updaterScript)
-            FileDelete(updaterScript)
-    } catch as err {
-        MsgBox(
-            "Не удалось удалить временные файлы:"
-                "`n" err.Message,
-            "Ошибка",
-            "Iconi"
-        )
-        return false
-    }
-
-    try {
-        Download(
-            RAW_BASE info.file "?t=" A_TickCount,
-            newFile
-        )
-
-        if !FileExist(newFile)
-            throw Error("Скачанный файл лаунчера не найден")
-
-        downloadedVersion := GetLocalVersion(newFile)
-
-        if downloadedVersion == "0.0.0"
-            throw Error(
-                "Скачанный лаунчер не содержит @version"
-            )
-    } catch as err {
-        MsgBox(
-            "Ошибка скачивания нового лаунчера:"
-                "`n" err.Message,
-            "Ошибка",
-            "Iconi"
-        )
-        return false
-    }
-
-    EscapeText(text) {
-        return StrReplace(text, '"', '""')
-    }
-
-    currentFileText := EscapeText(p)
-    newFileText := EscapeText(newFile)
-    ahkText := EscapeText(A_AhkPath)
-
-    updaterContent :=
-        '#Requires AutoHotkey v2.0`n'
-        . '#SingleInstance Force`n'
-        . 'Sleep 1000`n'
-        . 'if FileExist("' currentFileText '")`n'
-        . '    FileSetAttrib("-H", "' currentFileText '")`n'
-        . 'try FileMove("' currentFileText '", "' currentFileText '.old", true)`n'
-        . 'try FileMove("' newFileText '", "' currentFileText '", true)`n'
-        . 'try FileDelete("' currentFileText '.old")`n'
-        . 'Run("`"' ahkText '`" `"' currentFileText '`"")`n'
-        . 'Sleep 500`n'
-        . 'try FileDelete(A_ScriptFullPath)`n'
-        . 'ExitApp`n'
-
-    try {
-        FileAppend(
-            updaterContent,
-            updaterScript,
-            "UTF-8"
-        )
-    } catch as err {
-        MsgBox(
-            "Не удалось создать обновлятор:"
-                "`n" err.Message,
-            "Ошибка",
-            "Iconi"
-        )
-        return false
-    }
-
-    if !FileExist(updaterScript) {
-        MsgBox(
-            "Файл обновлятора не был создан.",
-            "Ошибка",
-            "Iconi"
-        )
-        return false
-    }
-
-    try {
-        Run('"' A_AhkPath '" "' updaterScript '"')
-    } catch as err {
-        MsgBox(
-            "Не удалось запустить обновлятор:"
-                "`n" err.Message,
-            "Ошибка",
-            "Iconi"
-        )
-        return false
-    }
-
-    ExitApp()
-}
-
-
-; ============================================================
-; ОБНОВЛЕНИЕ ОСТАЛЬНЫХ СКРИПТОВ
+; ОБНОВЛЕНИЕ ХЕЛПЕРКИ И ДРУГИХ СКРИПТОВ
 ; ============================================================
 
 UpdateScript(key, *) {
@@ -708,8 +503,7 @@ UpdateScript(key, *) {
             "Не удалось получить версию для " info.name
                 "`nПроверьте интернет и versions.json.",
             "Ошибка",
-            "Iconi"
-        )
+            "Iconi")
         return false
     }
 
@@ -722,8 +516,7 @@ UpdateScript(key, *) {
         MsgBox(
             "У вас уже последняя версия (" lv ").",
             "Информация",
-            "Iconi"
-        )
+            "Iconi")
         return true
     }
 
@@ -747,8 +540,7 @@ UpdateScript(key, *) {
 
         Download(
             RAW_BASE info.file "?t=" A_TickCount,
-            tempFile
-        )
+            tempFile)
 
         if !FileExist(tempFile)
             throw Error("Скачанный временный файл не найден")
@@ -766,8 +558,7 @@ UpdateScript(key, *) {
             "Скрипт " info.name
                 " обновлён до версии " rv,
             "Успешно",
-            "Iconi"
-        )
+            "Iconi")
 
         return true
     } catch as err {
@@ -779,10 +570,235 @@ UpdateScript(key, *) {
                 info.name
                 "`n" err.Message,
             "Ошибка",
-            "Iconi"
-        )
+            "Iconi")
         return false
     }
+}
+
+
+; ============================================================
+; ОБНОВЛЕНИЕ ЛАУНЧЕРА
+; ============================================================
+
+EscapeAhkString(value) {
+    value := StrReplace(value, '`r', '')
+    value := StrReplace(value, '`n', '')
+    value := StrReplace(value, '"', '`"')
+    return value
+}
+
+UpdateLauncher() {
+    info := scripts["Launcher"]
+    launcherFile := A_ScriptDir "\Launcher.ahk"
+    tempLauncher := A_ScriptDir "\Launcher_new.ahk"
+    updaterFile := A_ScriptDir "\_updater.ahk"
+
+    remoteVersion := GetRemoteVersion("Launcher", info)
+
+    if remoteVersion == "" {
+        MsgBox(
+            "Не удалось получить версию лаунчера.",
+            "Ошибка",
+            "Iconi")
+        return false
+    }
+
+    localVersion := GetLocalVersion(launcherFile)
+
+    if localVersion == remoteVersion
+        && localVersion != "0.0.0" {
+        MsgBox(
+            "У вас уже последняя версия лаунчера (" localVersion ").",
+            "Информация",
+            "Iconi")
+
+        guiControls["Launcher"].btnUpdate.Enabled := false
+        return true
+    }
+
+    try {
+        if FileExist(tempLauncher)
+            FileDelete(tempLauncher)
+
+        if FileExist(updaterFile)
+            FileDelete(updaterFile)
+    } catch as err {
+        MsgBox(
+            "Не удалось очистить временные файлы:"
+                "`n" err.Message,
+            "Ошибка",
+            "Iconi")
+        return false
+    }
+
+    try {
+        Download(
+            RAW_BASE "Launcher.ahk?t=" A_TickCount,
+            tempLauncher)
+
+        if !FileExist(tempLauncher)
+            throw Error("Загруженный Launcher_new.ahk отсутствует")
+
+        downloadedVersion := GetLocalVersion(tempLauncher)
+
+        if downloadedVersion == "0.0.0"
+            throw Error("В загруженном файле отсутствует @version")
+
+        if downloadedVersion != remoteVersion
+            throw Error(
+                "Версия загруженного файла "
+                    downloadedVersion
+                    " не совпадает с remote-версией "
+                    remoteVersion)
+    } catch as err {
+        MsgBox(
+            "Не удалось скачать обновление лаунчера:"
+                "`n" err.Message,
+            "Ошибка",
+            "Iconi")
+
+        if FileExist(tempLauncher)
+            try FileDelete(tempLauncher)
+
+        return false
+    }
+
+    ; Все пути передаются обновлятору отдельно через .ini-файл,
+    ; чтобы кавычки не ломали создаваемый AHK-код.
+    updateInfoFile := A_ScriptDir "\_launcher_update.ini"
+
+    try {
+        if FileExist(updateInfoFile)
+            FileDelete(updateInfoFile)
+
+        IniWrite(tempLauncher,
+            updateInfoFile,
+            "Update",
+            "NewFile")
+
+        IniWrite(launcherFile,
+            updateInfoFile,
+            "Update",
+            "TargetFile")
+
+        IniWrite(A_AhkPath,
+            updateInfoFile,
+            "Update",
+            "AutoHotkey")
+
+        if !FileExist(updateInfoFile)
+            throw Error("INI-файл параметров не был создан")
+    } catch as err {
+        MsgBox(
+            "Не удалось подготовить параметры обновления:"
+                "`n" err.Message,
+            "Ошибка",
+            "Iconi")
+
+        if FileExist(tempLauncher)
+            try FileDelete(tempLauncher)
+
+        return false
+    }
+
+    updaterContent :=
+        '#Requires AutoHotkey v2.0`n'
+        . '#SingleInstance Force`n'
+        . '`n'
+        . 'updateInfo := A_ScriptDir "\_launcher_update.ini"`n'
+        . '`n'
+        . 'Sleep 1500`n'
+        . '`n'
+        . 'newFile := IniRead(updateInfo, "Update", "NewFile", "")`n'
+        . 'targetFile := IniRead(updateInfo, "Update", "TargetFile", "")`n'
+        . 'ahkExe := IniRead(updateInfo, "Update", "AutoHotkey", "")`n'
+        . '`n'
+        . 'if newFile = "" or targetFile = "" or ahkExe = "" {`n'
+        . '    MsgBox("Не удалось прочитать параметры обновления.", "Ошибка", "Iconi")`n'
+        . '    ExitApp`n'
+        . '}`n'
+        . '`n'
+        . 'if !FileExist(newFile) {`n'
+        . '    MsgBox("Новый файл лаунчера не найден.", "Ошибка", "Iconi")`n'
+        . '    ExitApp`n'
+        . '}`n'
+        . '`n'
+        . 'try FileSetAttrib("-H", targetFile)`n'
+        . 'try FileMove(targetFile, targetFile ".old", true)`n'
+        . '`n'
+        . 'try {`n'
+        . '    FileMove(newFile, targetFile, true)`n'
+        . '} catch as err {`n'
+        . '    if FileExist(targetFile ".old")`n'
+        . '        try FileMove(targetFile ".old", targetFile, true)`n'
+        . '`n'
+        . '    MsgBox("Не удалось заменить лаунчер:`n" err.Message, "Ошибка", "Iconi")`n'
+        . '    ExitApp`n'
+        . '}`n'
+        . '`n'
+        . 'try FileDelete(targetFile ".old")`n'
+        . 'try IniDelete(updateInfo)`n'
+        . '`n'
+        . 'Sleep 500`n'
+        . '`n'
+        . 'try {`n'
+        . '    Run(`"' ahkExe '`" `"' targetFile '`"")`n'
+        . '} catch as err {`n'
+        . '    MsgBox("Лаунчер обновлён, но не удалось запустить:`n" err.Message, "Ошибка", "Iconi")`n'
+        . '}`n'
+        . '`n'
+        . 'Sleep 300`n'
+        . 'try FileDelete(A_ScriptFullPath)`n'
+        . 'ExitApp`n'
+
+    try {
+        FileDelete(updaterFile)
+        FileAppend(
+            updaterContent,
+            updaterFile,
+            "UTF-8")
+    } catch as err {
+        MsgBox(
+            "Не удалось создать обновлятор:"
+                "`n" err.Message
+                "`nПуть: " updaterFile
+                "`nПроверьте права на запись.",
+            "Ошибка",
+            "Iconi")
+
+        try FileDelete(tempLauncher)
+        try FileDelete(updateInfoFile)
+        return false
+    }
+
+    if !FileExist(updaterFile) {
+        MsgBox(
+            "Обновлятор был создан без содержимого:"
+                "`n" updaterFile,
+            "Ошибка",
+            "Iconi")
+
+        try FileDelete(tempLauncher)
+        try FileDelete(updateInfoFile)
+        return false
+    }
+
+    try {
+        Run('"' A_AhkPath '" "' updaterFile '"')
+    } catch as err {
+        MsgBox(
+            "Не удалось запустить обновлятор:"
+                "`n" err.Message,
+            "Ошибка",
+            "Iconi")
+
+        try FileDelete(updaterFile)
+        try FileDelete(tempLauncher)
+        try FileDelete(updateInfoFile)
+        return false
+    }
+
+    ExitApp()
 }
 
 
@@ -798,15 +814,14 @@ UpdateAllScripts(*) {
 
     launcherInfo := scripts["Launcher"]
     launcherPath := A_ScriptDir "\" launcherInfo.file
+    launcherRemoteVersion := GetRemoteVersion(
+        "Launcher",
+        launcherInfo)
+    launcherLocalVersion := GetLocalVersion(
+        launcherPath)
 
-    remoteLauncherVersion :=
-        GetRemoteVersion("Launcher", launcherInfo)
-
-    localLauncherVersion :=
-        GetLocalVersion(launcherPath)
-
-    if remoteLauncherVersion != ""
-        && remoteLauncherVersion != localLauncherVersion
+    if launcherRemoteVersion != ""
+        && launcherRemoteVersion != launcherLocalVersion
         launcherNeedsUpdate := true
 
     for key, info in scripts {
@@ -822,8 +837,7 @@ UpdateAllScripts(*) {
             "Обычные скрипты обработаны."
                 "`nСейчас запускается обновление лаунчера.",
             "Обновление лаунчера",
-            "Iconi"
-        )
+            "Iconi")
 
         UpdateLauncher()
         return
@@ -835,8 +849,7 @@ UpdateAllScripts(*) {
                 "`nОбновлено скриптов: " updated
             : "Все скрипты уже актуальны.",
         "Результат",
-        "Iconi"
-    )
+        "Iconi")
 
     statusBar.Value := "Обновление завершено."
 }
