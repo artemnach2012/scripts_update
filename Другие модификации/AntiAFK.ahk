@@ -50,4 +50,3 @@ RandomPress() {
         SetTimer(RandomPress, -nextDelay)
 }
 return
-
