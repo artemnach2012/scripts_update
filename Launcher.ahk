@@ -1,11 +1,8 @@
 #Requires AutoHotkey v2.0
 #SingleInstance Force
 
-; @version 1.0.2
+; @version 1.0.3
 
-; ============================================================
-; НАСТРОЙКИ
-; ============================================================
 GITHUB_REPO := "artemnach2012/scripts_update"
 RAW_BASE    := "https://raw.githubusercontent.com/" GITHUB_REPO "/main/"
 INI_FILE    := A_ScriptDir "\settings.ini"
@@ -13,22 +10,20 @@ CONFIG_URL  := RAW_BASE "scripts_config.json"
 VERSION_URL := RAW_BASE "version.json"
 
 scripts := Map()
-scripts["Launcher"]    := { name: "Лаунчер",        file: "Launcher.ahk",    localVer: "0.0.0", isLauncher: true }
-scripts["ArmyReports"] := { name: "Армия докладов", file: "ArmyReports.ahk", localVer: "0.0.0" }
-scripts["AntiAFK"]     := { name: "Анти-АФК",       file: "AntiAFK.ahk",     localVer: "0.0.0" }
-scripts["MoscowLive"]  := { name: "Москва-Live",    file: "MoscowLive.ahk",  localVer: "0.0.0" }
-scripts["Helpers"]     := { name: "Хелперка",       file: "Helpers.ahk",     localVer: "0.0.0" }
+scripts["Launcher"]    := { name: "Лаунчер",          file: "Launcher.ahk",    localVer: "0.0.0", isLauncher: true }
+scripts["ArmyReports"] := { name: "Армия докладов",   file: "ArmyReports.ahk", localVer: "0.0.0" }
+scripts["AntiAFK"]     := { name: "Анти-АФК",         file: "AntiAFK.ahk",     localVer: "0.0.0" }
+scripts["MoscowLive"]  := { name: "Москва-Live",      file: "MoscowLive.ahk",  localVer: "0.0.0" }
+scripts["Helpers"]     := { name: "Хелперка (биндер)", file: "Helpers.ahk",    localVer: "0.0.0" }
+scripts["AdminTools"]  := { name: "Админ-тулза",      file: "AdminTools.ahk",  localVer: "0.0.0" }
 
-; ============================================================
-; ЗАГРУЗКА КОНФИГА
-; ============================================================
 GetDefaultConfig() {
     cfg := Map()
     s := Map()
     s["ArmyReports"] := Map("name", "Армия докладов", "settings", [
         Map("type", "Edit", "label", "Пост:", "section", "ArmyReports", "key", "Post", "default", "КПП-1"),
         Map("type", "Edit", "label", "Интервал (мин):", "section", "ArmyReports", "key", "Interval", "default", "10"),
-        Map("type", "CheckBox", "label", "Автодоклад по таймеру", "section", "ArmyReports", "key", "AutoReport", "default", 0)
+        Map("type", "CheckBox", "label", "Автодоклад", "section", "ArmyReports", "key", "AutoReport", "default", 0)
     ])
     s["AntiAFK"] := Map("name", "Анти-АФК", "settings", [
         Map("type", "Edit", "label", "Интервал (сек):", "section", "AntiAFK", "key", "Interval", "default", "30"),
@@ -38,11 +33,12 @@ GetDefaultConfig() {
     s["MoscowLive"] := Map("name", "Москва-Live", "settings", [
         Map("type", "Edit", "label", "Задержка (мс):", "section", "MoscowLive", "key", "Delay", "default", "100")
     ])
-    s["Helpers"] := Map("name", "Хелперка", "settings", [
+    s["Helpers"] := Map("name", "Хелперка (биндер)", "settings", [
         Map("type", "Edit", "label", "Привязки (F1=/me текст{Enter}, по одной на строку):",
             "section", "Helpers", "key", "Bindings", "multi", 1, "height", 150,
             "default", "F1=/me поправил бронежилет{Enter}`nF2=/do Бронежилет на груди.{Enter}")
     ])
+    s["AdminTools"] := Map("name", "Админ-тулза", "settings", [])
     cfg["scripts"] := s
     return cfg
 }
@@ -59,9 +55,6 @@ LoadConfigFromNet() {
     return ""
 }
 
-; ============================================================
-; GUI
-; ============================================================
 mainGui := Gui(, "Панель управления скриптами")
 mainGui.BackColor := "2A2A2A"
 mainGui.SetFont("s10 cWhite", "Segoe UI")
@@ -71,7 +64,6 @@ if (!IsObject(cfg) || !cfg.Has("scripts"))
     cfg := GetDefaultConfig()
 configScripts := cfg["scripts"]
 
-; Имена вкладок: Главная, Профиль, [скрипты без лаунчера]
 tabNames := ["Главная", "Профиль"]
 scriptTabIndex := Map()
 nextTabIdx := 3
@@ -199,9 +191,14 @@ for key, cfgInfo in configScripts {
     }
     configFields[key] := ctrls
 
-    mainGui.SetFont("s9 cBlack Bold")
-    (btnSave := mainGui.Add("Button", "x40 y330 w180 h28", "💾 Сохранить")).BackColor := "2196F3"
-    btnSave.OnEvent("Click", SaveSettings.Bind(key))
+    if (settingsArr.Length > 0) {
+        mainGui.SetFont("s9 cBlack Bold")
+        (btnSave := mainGui.Add("Button", "x40 y330 w180 h28", "💾 Сохранить")).BackColor := "2196F3"
+        btnSave.OnEvent("Click", SaveSettings.Bind(key))
+    } else {
+        mainGui.SetFont("s10 cGray")
+        mainGui.Add("Text", "x40 y105 w540", "У этого скрипта нет настраиваемых параметров.")
+    }
 }
 
 tabPanel.UseTab()
@@ -210,9 +207,6 @@ mainGui.SetFont("s10 cGray")
 statusBar := mainGui.Add("Text", "x15 y400 w610", "Готов к работе.")
 mainGui.Show("w630 h430")
 
-; ============================================================
-; ПРОФИЛЬ
-; ============================================================
 SaveProfile(*) {
     global INI_FILE, statusBar
     global edtCharName, edtStaticID, edtFaction, edtRank, edtPost
@@ -225,9 +219,6 @@ SaveProfile(*) {
     MsgBox("✅ Профиль сохранён!`n`nПерезапусти активные скрипты, чтобы они подхватили данные.", "OK", "Iconi")
 }
 
-; ============================================================
-; НАСТРОЙКИ
-; ============================================================
 SaveSettings(key, *) {
     global configFields, INI_FILE, statusBar, scripts
     ctrls := configFields[key]
@@ -251,9 +242,6 @@ SaveSettings(key, *) {
     MsgBox("Настройки для '" scripts[key].name "' сохранены.", "OK", "Iconi")
 }
 
-; ============================================================
-; УТИЛИТЫ
-; ============================================================
 HideFile(p) {
     if FileExist(p)
         FileSetAttrib("+H", p)
@@ -282,7 +270,6 @@ HTTPGet(url) {
     return ""
 }
 
-; Простой парсер плоского JSON: {"Key": "Value", ...}
 ParseSimpleJSON(j) {
     obj := Map()
     j := Trim(j, "{} `t`n`r")
@@ -301,9 +288,6 @@ GetRemoteVersions() {
     return (jsonText != "") ? ParseSimpleJSON(jsonText) : Map()
 }
 
-; ============================================================
-; ПОЛНЫЙ JSON-ПАРСЕР (для scripts_config.json)
-; ============================================================
 ParseJSON(s) {
     p := 1
     return _jValue(s, &p)
@@ -442,9 +426,6 @@ _jNum(s, &p) {
     return SubStr(s, start, p - start) + 0
 }
 
-; ============================================================
-; УПРАВЛЕНИЕ СКРИПТАМИ
-; ============================================================
 StopScript(key, *) {
     global scripts, guiControls, statusBar
     p := A_ScriptDir "\" scripts[key].file
@@ -503,9 +484,6 @@ StartScript(key, *) {
     statusBar.Value := "▶ Запущен: " info.name
 }
 
-; ============================================================
-; ОБНОВЛЕНИЕ
-; ============================================================
 UpdateLauncher() {
     global scripts, guiControls, statusBar
     info := scripts["Launcher"]
