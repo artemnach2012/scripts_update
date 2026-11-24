@@ -161,7 +161,7 @@ ParseSimpleJSON(j) {
 }
 
 GetRemoteVersions() {
-    jsonText := HTTPGet(RAW_BASE "version.json")
+    jsonText := HTTPGet(RAW_BASE "versions.json")
     return (jsonText != "") ? ParseSimpleJSON(jsonText) : Map()
 }
 
