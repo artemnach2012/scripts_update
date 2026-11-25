@@ -1,11 +1,20 @@
 #Requires AutoHotkey v2.0
 #SingleInstance Force
 
-; @version 1.1.0
+; @version 1.1.1
 
 GITHUB_REPO := "artemnach2012/scripts_update"
 RAW_BASE := "https://raw.githubusercontent.com/" GITHUB_REPO "/main/"
 INI_FILE := A_ScriptDir "\settings.ini"
+
+; ==================== СОЗДАНИЕ ФАЙЛА НАСТРОЕК ====================
+; Гарантированно создаем settings.ini, если его ещё нет
+if !FileExist(INI_FILE) {
+    try {
+        fh := FileOpen(INI_FILE, "w", "UTF-8")
+        fh.Close()
+    }
+}
 
 ; ==================== ПАЛИТРА ЦВЕТОВ ====================
 CLR_BG        := "141417" ; Основной фон
@@ -298,7 +307,6 @@ ParseSimpleJSON(j) {
         return result
     for part in StrSplit(j, ",") {
         part := Trim(part)
-        ; Исправлено: добавлено * для поддержки пустых значений в JSON
         if RegExMatch(part, '^\s*"([^"]+)"\s*:\s*"([^"]*)"\s*$', &match)
             result[match[1]] := match[2]
     }
@@ -512,7 +520,6 @@ UpdateLauncher() {
         return false
     }
     
-    ; ==================== ИСПРАВЛЕННЫЙ БЛОК ====================
     updaterContent := "
     (
 #Requires AutoHotkey v2.0
@@ -552,7 +559,6 @@ Sleep 300
 try FileDelete(A_ScriptFullPath)
 ExitApp
     )"
-    ; ==========================================================
 
     try {
         FileDelete(updaterFile)
