@@ -876,6 +876,7 @@ F10:: {
 
 ; ---------- правила.ahk ----------
 Home:: {
+    Global pp_text, pgo_text, pko_text, fkz_text
     static RulesGui := 0
 
     if IsObject(RulesGui) && WinExist("ahk_id " RulesGui.Hwnd) {
