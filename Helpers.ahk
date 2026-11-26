@@ -1,7 +1,7 @@
 #Requires AutoHotkey v2.0
 #SingleInstance Force
 
-; @version 1.0.0
+; @version 1.0.3
 
 ; =============================================================================
 ; 1. ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
@@ -235,7 +235,7 @@ ShowHelpWindow() {
     MyGui2.Add("Text",, "• Alt+C — Очистить транспорт")
     MyGui2.Add("Text",, "• F12 — Очистить таблицу предов")
     MyGui2.Add("Text",, "• Ctrl+Alt+C — Очистка папки с видео (старше 4 дней)")
-    MyGui2.Add("Text",, "• Home — Правила сервера (ПП, ПГО, ПКО, ФКЗ)")
+    MyGui2.Add("Text",, "• Home — Правила сервера (ПП, ПГО, ПКО, ФКЗ, Собесы)")
     MyGui2.Add("Text",, "• F1 — Грибы (название, цена, шанс + карта)")
     Btn := MyGui2.Add("Button", "w80 Default", "Понял")
     Btn.OnEvent("Click", (GuiCtrl, *) => GuiCtrl.Gui.Destroy())
