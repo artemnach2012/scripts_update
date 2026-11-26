@@ -939,6 +939,44 @@ Home:: {
 
     RulesGui.Show("x5 y50 NoActivate")
 }
+; ---------- правила.ahk ----------
+Home:: {
+    Global pp_text, pgo_text, pko_text, fkz_text, sobes_text
+    static RulesGui := 0
+
+    if IsObject(RulesGui) && WinExist("ahk_id " RulesGui.Hwnd) {
+        if DllCall("IsWindowVisible", "Ptr", RulesGui.Hwnd)
+            RulesGui.Hide()
+        else
+            RulesGui.Show()
+        return
+    }
+
+    RulesGui := Gui("+AlwaysOnTop -Caption +ToolWindow", "Правила RMRP")
+    RulesGui.SetFont("s10 cBlack", "Consolas")
+    RulesGui.BackColor := "Black"
+
+    BtnPP := RulesGui.Add("Button", "x10 y10 w80 h30", "ПП")
+    BtnPGO := RulesGui.Add("Button", "x100 y10 w80 h30", "ПГО")
+    BtnPKO := RulesGui.Add("Button", "x190 y10 w80 h30", "ПКО")
+    BtnFKZ := RulesGui.Add("Button", "x280 y10 w80 h30", "ФКЗ")
+    BtnSobes := RulesGui.Add("Button", "x370 y10 w90 h30", "Собесы")
+    BtnClose := RulesGui.Add("Button", "x700 y10 w100 h30", "Закрыть")
+
+    EditCtrl := RulesGui.Add("Edit", "x10 y50 w800 h500 ReadOnly +Multi +Wrap +VScroll", "")
+    SendMessage(0x00C5, 0x7FFFFFFE, 0, EditCtrl.Hwnd)
+    EditCtrl.Value := pp_text
+
+    BtnPP.OnEvent("Click", (*) => EditCtrl.Value := pp_text)
+    BtnPGO.OnEvent("Click", (*) => EditCtrl.Value := pgo_text)
+    BtnPKO.OnEvent("Click", (*) => EditCtrl.Value := pko_text)
+    BtnFKZ.OnEvent("Click", (*) => EditCtrl.Value := fkz_text)
+    BtnSobes.OnEvent("Click", (*) => EditCtrl.Value := sobes_text)
+    BtnClose.OnEvent("Click", (*) => RulesGui.Hide())
+
+    RulesGui.Show("x5 y50 NoActivate")
+}
+
 
 ; ---------- Съемка.ahk ----------
 !w:: {
